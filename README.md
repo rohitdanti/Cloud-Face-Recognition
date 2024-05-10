@@ -13,3 +13,6 @@ In Part 2 of the project, the Web Tier, operating on the same EC2 instance as Pa
 Once all input images were classified, they were stored in an S3 input bucket, while results were stored in an output bucket, ensuring data persistence and easy access to processed data.
 
 **Project 2 - PAAS**
+
+_Part 1_ - In Project 2, we utilized AWS Lambda to develop an advanced cloud application for face recognition in client videos. This phase focused on implementing the video-splitting function. Clients uploaded videos to the Input bucket, triggering a Lambda function to split them into frames stored in the Stage-1 bucket.
+Leveraging Docker, we seamlessly integrated files into Lambda, ensuring smooth deployment. The system efficiently processed video data, thanks to Lambda's agility. CloudWatch monitored operations, offering valuable insights. This phase showcased the power of cloud-native solutions, setting the stage for further innovation in video processing.
