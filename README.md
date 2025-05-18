@@ -65,8 +65,6 @@ cloud-face-recognition/
 ├── architecture/
 │   ├── iaas-architecture.png
 │   └── paas-architecture.png
-├── LICENSE
-├── .gitignore
 └── README.md
 ```
 
