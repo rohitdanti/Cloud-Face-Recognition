@@ -1,4 +1,0 @@
-boto3==1.34.86
-requests==2.31.0
--r requirements_extra.txt
-opencv-python-headless==4.9.0.80
