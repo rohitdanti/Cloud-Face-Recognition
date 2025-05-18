@@ -1,20 +1,119 @@
-# Cloud-Computing
-CSE 546 - Cloud Computing
-I took the CSE 546: cloud computing course as part of my masters in Computer Science program at ASU. This course provided a comprehensive understanding of the fundamental principles and concepts of cloud computing, alongside practical skills for developing cloud applications using popular Infrastructure-as-a-Service and Platform-as-a-Service resources. Employing an innovative bottom-up approach, the course covered the underlying technologies such as virtualization in cloud computing, as well as practical cloud programming techniques for both IaaS and PaaS.
+# ☁️ Cloud-Scale Face Recognition System (AWS IaaS + PaaS)
 
-The course involved 2 major projects each divided into 2 parts - 
+This repository presents a full-fledged, cloud-native face recognition pipeline built using both Infrastructure-as-a-Service (IaaS) and Platform-as-a-Service (PaaS) paradigms on AWS. The project handles real-time image and video classification using deep learning, and is optimized for high throughput and cost-effective scalability.
 
-**Project 1 - IAAS**
+Designed to simulate production-grade media intelligence and security workflows, this system features autoscaling EC2 tiers, event-driven Lambda functions, Dockerized machine learning inference, and persistent cloud storage with S3.
 
-_**Part 1 -**_ In Part 1, the project began with setting up an AWS account and creating an IAM user along with other necessary configurations. Following this, an EC2 Instance was created to serve as the web tier. This instance hosted a server that continuously listened to incoming HTTP requests. Upon receiving a request containing images of faces, the server cross-referenced the filenames with a CSV file mapping them to respective person names. Finally, the recognition result was printed out for the user. The server underwent testing with 1000 images, completing the classification process in 2.2 seconds, correctly identifying all 1000 images.
+---
 
-_**Part 2 -**_ 
-In Part 2 of the project, the Web Tier, operating on the same EC2 instance as Part 1, functioned on port 8000. It received user images, directing them to the App Tier for classification using a machine learning model, instead of referencing a CSV mapping file. The results were then returned to users. Communication between Web and App Tiers took place through two SQS Queues: request and response queues. Additionally, the Web Tier managed auto-scaling.To handle concurrency and auto-scaling, 20 App Tier instances were deployed. The Web Tier, overseeing auto-scaling, initiated App Tier instances based on HTTP request volume, utilizing a custom auto-scaling algorithm.
-Once all input images were classified, they were stored in an S3 input bucket, while results were stored in an output bucket, ensuring data persistence and easy access to processed data.
+## 🔧 Project Overview
 
-**Project 2 - PAAS**
+| Component                   | Description                                                                 |
+|-----------------------------|-----------------------------------------------------------------------------|
+| 🖥 Web Tier (EC2)           | Accepts user image uploads, processes requests, and coordinates system flow |
+| 🧠 App Tier (EC2)           | Worker instances performing ML inference (CSV lookup or ResNet model)       |
+| 📽 Lambda: Video Split      | Serverless frame extractor triggered on video upload                        |
+| 🧬 Lambda: Face Recognition | ML inference on extracted frames using SSD & ResNet                         |
+| ☁️ Storage (S3)             | Persistent input, intermediate, and output buckets                          |
+| 📬 Messaging (SQS)          | Request-response queue between tiers (for decoupled EC2 tiers)              |
 
-_Part 1_ - In Project 2, we utilized AWS Lambda to develop an advanced cloud application for face recognition in client videos. This phase focused on implementing the video-splitting function. Clients uploaded videos to the Input bucket, triggering a Lambda function to split them into frames stored in the Stage-1 bucket.
-Leveraging Docker, we seamlessly integrated files into Lambda, ensuring smooth deployment. The system efficiently processed video data, thanks to Lambda's agility. CloudWatch monitored operations, offering valuable insights. This phase showcased the power of cloud-native solutions, setting the stage for further innovation in video processing.
+---
 
-_Part 2_ - In the second part of Project 2, we deployed AWS Lambda to create a video analysis application. This involved constructing a multi-stage pipeline with four Lambda functions to handle user-uploaded videos. Initially, videos underwent frame extraction using FFmpeg within a Lambda function, storing individual frames as images in an intermediate bucket. Subsequently, a face-recognition function, encapsulated in a Docker container for Lambda deployment, applied an SSD algorithm and a pre-trained CNN model to detect faces within frames. Recognized faces were then cataloged in text files within the output bucket. This process showcased the seamless integration of Lambda, Docker, and machine learning for video analysis.
+## 🏗 Architecture Diagram
+
+> Add to `/architecture/` if you have PNGs or use draw.io / Lucidchart exports.
+
+```
+User Uploads
+     ↓
+[S3 Input Bucket] ───> [Lambda: Video Split]
+                          ↓ (frame)
+                    [S3 Stage-1 Bucket] ────> [Lambda: Face Recog] ───→ [S3 Output Bucket]
+                                              ↓                            ↑
+                                Pretrained CNN (ResNet-34)         TXT result (identity)
+
+--- parallel path ---
+
+[EC2 Web Tier] <─> [SQS] <─> [EC2 App Tier(s)] <─> [ResNet] <─> [S3]
+```
+
+---
+
+## 📁 Directory Structure
+
+```
+cloud-face-recognition/
+├── backend/
+│   ├── web-tier/
+│   │   ├── server.js
+│   │   ├── web.js
+│   │   ├── app.js
+│   │   ├── face_recognition.py
+│   │   └── images.csv
+│   └── lambda-functions/
+│       ├── video-split/
+│       │   ├── handler.py
+│       │   ├── entry.sh
+│       │   ├── Dockerfile
+│       │   └── requirements.txt
+│       └── face-recognition/
+│           ├── handler.py
+│           ├── faceRecog.py
+│           ├── Dockerfile
+│           ├── requirements.txt
+│           └── requirements_extra.txt
+├── architecture/
+│   ├── iaas-architecture.png
+│   └── paas-architecture.png
+├── LICENSE
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🧪 How to Test
+
+1. **Image Classification via EC2**
+   - POST `.jpg` file to Web Tier on port `8000`
+   - Output: `<filename>:<name>` from either CSV or inference
+
+2. **Video Face Recognition via Lambda**
+   - Upload `.mp4` to `<id>-input` bucket
+   - Frame appears in `<id>-stage-1`
+   - Result `.txt` appears in `<id>-output`
+
+---
+
+## 📌 Technical Highlights
+
+- ⚡ Custom EC2 Auto-scaling (SDK-controlled, not AWS-native)
+- 🐳 Docker-based Lambda packaging for heavy ML dependencies
+- 🧠 SSD + ResNet-based inference pipeline
+- 🌐 Express.js + Multer + Boto3 integrations
+- 🔐 Least-privilege IAM, async Lambda invokes, FFmpeg layer config
+
+---
+
+## 🔒 Security
+
+- IAM-scoped policies for S3, SQS, EC2, and Lambda
+- Elastic IP configured on EC2 instance
+- FFmpeg added via Lambda layer or container install
+- All input validation (extensions, bucket names) enforced
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for more information.
+
+---
+
+## 💡 Author's Note
+
+This project showcases end-to-end cloud architecture, auto-scalability, serverless execution, and ML inference across EC2 and Lambda environments. It reflects practical expertise in distributed systems, DevOps integration, and cloud-native AI design.
+
+> ⭐ If you find this project insightful, please consider starring the repository!
+
+---
