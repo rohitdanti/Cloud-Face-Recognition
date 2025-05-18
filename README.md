@@ -104,16 +104,8 @@ cloud-face-recognition/
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License. See [LICENSE](./LICENSE) for more information.
-
----
-
-## 💡 Author's Note
+## 📝 Summary
 
 This project showcases end-to-end cloud architecture, auto-scalability, serverless execution, and ML inference across EC2 and Lambda environments. It reflects practical expertise in distributed systems, DevOps integration, and cloud-native AI design.
-
-> ⭐ If you find this project insightful, please consider starring the repository!
 
 ---
